@@ -7,10 +7,11 @@ namespace LAB_1_OOP.lib.Course
     {
         public string Title { get; protected set; }
         public Teacher AssignedTeacher { get; protected set; }
-        public List<Student> Students { get; protected set; }
+        public List<Student> Students { get; protected set; } = new List<Student>();
 
         public abstract string GetCourseType();
-
+        public abstract string ShowDetails();
+        
         public void AssignTeacher(Teacher teacher)
         {
             AssignedTeacher = teacher;
@@ -26,5 +27,7 @@ namespace LAB_1_OOP.lib.Course
         {
             Students.Remove(student);
         }
+
+       
     }
 }

@@ -19,5 +19,10 @@ namespace LAB_1_OOP.lib.Course
         {
             return "Online";
         }
+
+        public override string ShowDetails()
+        {
+            return Classroom;
+        }
     }
 }
