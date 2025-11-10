@@ -16,9 +16,8 @@ namespace Application
             {
                 var cmd = Console.ReadLine();
                 if (string.IsNullOrEmpty(cmd)) continue;
-                cmd.ToLower();
                 
-                switch (cmd)
+                switch (cmd.ToLower())
                 {
                     case "list":
                         Console.WriteLine("To show all Courses of specific person, please type: \n" +
@@ -28,9 +27,15 @@ namespace Application
                         {
                             foreach (var course in CourseManager.Courses)
                             {
-                                Console.WriteLine($"– {course.Title}, Type: {course.GetCourseType()}," +
-                                                  $" Assigned Teacher:" +
-                                                  $" {course.AssignedTeacher.FirstName} {course.AssignedTeacher.LastName}");
+                                Console.WriteLine($"– {course.Title}, Type: {course.GetCourseType()}" +
+                                                  $" specifics: {course.ShowDetails()}.");
+                                string teachers = "\t Assigned Teachers: ";
+                                foreach (var person in course.AssignedTeachers)
+                                    teachers += (person.GetFullName() + ", ");
+                                string students = "\t Assigned Students: ";
+                                foreach (var person in course.Students)
+                                    students += (person.GetFullName() + ", ");
+                                Console.WriteLine(teachers + "\n" + students);
                             }
                             break;
                         };
@@ -41,7 +46,7 @@ namespace Application
                             break;
                         }
                         var selectedPersonName = (parts[1] + " " + parts[2]).ToLower().Trim();
-                        if (line == "teacher")
+                        if (parts[0] == "teacher")
                         {
                             var selectedTeacher = CourseManager.Teachers.FirstOrDefault(
                                 t => t.GetFullName() == selectedPersonName);
@@ -51,14 +56,13 @@ namespace Application
                                 break;
                             }
                             foreach (var course in CourseManager.Courses.Where(
-                                         c=> c.AssignedTeacher == selectedTeacher))
+                                         c=> c.AssignedTeachers.Contains(selectedTeacher)))
                             {
-                                Console.WriteLine($"– {course.Title}, Type: {course.GetCourseType()}," +
-                                                  $" Assigned Teacher:" +
-                                                  $" {course.AssignedTeacher.FirstName} {course.AssignedTeacher.LastName}");
+                                Console.WriteLine($"– {course.Title}, Type: {course.GetCourseType()}" +
+                                                  $" specifics: {course.ShowDetails()}.");
                             }
                         }
-                        else if (line == "student")
+                        else if (parts[0] == "student")
                         {
                             var selectedStudent = CourseManager.Students.FirstOrDefault(
                                 s => s.GetFullName() == selectedPersonName);
@@ -70,9 +74,8 @@ namespace Application
                             foreach (var course in CourseManager.Courses.Where(c 
                                          => c.Students.Contains(selectedStudent)))
                             {
-                                Console.WriteLine($"– {course.Title}, Type: {course.GetCourseType()}," +
-                                                  $" Assigned Teacher:" +
-                                                  $" {course.AssignedTeacher.FirstName} {course.AssignedTeacher.LastName}");
+                                Console.WriteLine($"– {course.Title}, Type: {course.GetCourseType()}" +
+                                          $" specifics: {course.ShowDetails()}.");
                             }
                         }
                         else
@@ -84,14 +87,14 @@ namespace Application
                     case "list_students":
                         foreach (var student in CourseManager.Students)
                         {
-                            Console.WriteLine("– " + student.FirstName, student.LastName);
+                            Console.WriteLine("– " + student.GetFullName());
                         };
                         break;
                     
                     case "list_teachers":
                         foreach (var teacher in CourseManager.Teachers)
                         {
-                            Console.WriteLine("– " + teacher.FirstName, teacher.LastName);
+                            Console.WriteLine("– " + teacher.GetFullName());
                         };
                         break;
                     
@@ -140,7 +143,7 @@ namespace Application
                         Console.WriteLine("Please specify course name:");
                         var courseToEnrollName = Console.ReadLine()?.ToLower().Trim();
                         Course courseToEnroll = CourseManager.Courses.FirstOrDefault(
-                            c => c.Title == courseToEnrollName);
+                            c => c.Title.ToLower() == courseToEnrollName);
                         if (courseToEnroll == null)
                         {
                             Console.WriteLine("Course not found.");
@@ -152,7 +155,7 @@ namespace Application
                                           $" on {courseToEnroll.GetCourseType()} course {courseToEnroll.Title}");
                         break;
                     
-                    case "change_teacher":
+                    case "assign_teacher":
                         Console.WriteLine("Please specify teacher's full name: 'firstName' 'lastName'");
                         var teacherFullName = Console.ReadLine()?.ToLower().Trim();
                         if (teacherFullName == "")
@@ -168,19 +171,24 @@ namespace Application
                             Console.WriteLine("Teacher not found.");
                             break;
                         }
-                        Console.WriteLine("Please specify teacher's course name:");
+                        Console.WriteLine("Please specify course name:");
                         var courseTeacherChangeName = Console.ReadLine()?.Trim().ToLower();
                         var courseTeacherChange =
-                            CourseManager.Courses.FirstOrDefault(c => c.Title == courseTeacherChangeName);
+                            CourseManager.Courses.FirstOrDefault(c => c.Title.ToLower() == courseTeacherChangeName);
+                        if (courseTeacherChange == null)
+                        {
+                            Console.WriteLine("Course not found.");
+                            break;
+                        }
                         courseTeacherChange.AssignTeacher(teacherForChange);
                         CourseManager.Save();
-                        Console.WriteLine($"Successfuly changed teacher to {courseTeacherChangeName} " +
+                        Console.WriteLine($"Successfuly assigned teacher to {courseTeacherChangeName} " +
                                           $"in course {courseTeacherChangeName}.");
                         break;
                     
                     case "create_course":
                         Console.WriteLine("Please specify course name:");
-                        var newCourseName = Console.ReadLine()?.ToLower().Trim();
+                        var newCourseName = Console.ReadLine();
                         if (newCourseName == null)
                         {
                             Console.WriteLine("Incorrect course name, please try again.");
@@ -194,14 +202,10 @@ namespace Application
                             break;
                         }
                         Console.WriteLine("Please specify course teacher: 'First Name' 'Last Name'");
-                        var newCourseTeacherName = Console.ReadLine()?.ToLower().Split();
-                        if (newCourseTeacherName.Length != 2)
-                        {
-                            Console.WriteLine("Incorrect course teacher, please enter first and last name with space.");
-                            break;
-                        }
-                        var newCourseTeacher = CourseManager.Courses.FirstOrDefault(
-                            c => c.Title == newCourseTeacherName[0]);
+                        var newCourseTeacherName = Console.ReadLine()?.ToLower();
+                        
+                        var newCourseTeacher = CourseManager.Teachers.FirstOrDefault(
+                            t => t.GetFullName() == newCourseTeacherName);
                         if (newCourseTeacher == null)
                         {
                             Console.WriteLine("Teacher not found. Please try again.");
@@ -227,10 +231,10 @@ namespace Application
                             Console.WriteLine("Cannot create course. Please try again.");
                             break;
                         }
+                        newCourse.AssignTeacher(newCourseTeacher);
                         CourseManager.Courses.Add(newCourse);
                         CourseManager.Save();
-                        Console.WriteLine($"Successfully created {newCourse.GetType()} course: {newCourse.Title}," +
-                                          $" with Teacher {newCourse.AssignedTeacher.FirstName} {newCourse.AssignedTeacher.LastName}." +
+                        Console.WriteLine($"Successfully created {newCourse.GetType()} course: {newCourse.Title}" +
                                           $"\n specifics: {newCourse.ShowDetails()}.");
                         break;
                     
@@ -242,7 +246,7 @@ namespace Application
                         {
                             Console.WriteLine("Please specify title of course you want to delete: ");
                             var deleteCourseTitle = Console.ReadLine()?.ToLower().Trim();
-                            var courseToDelete = CourseManager.Courses.FirstOrDefault(c => c.Title == deleteCourseTitle);
+                            var courseToDelete = CourseManager.Courses.FirstOrDefault(c => c.Title.ToLower() == deleteCourseTitle);
                             if (courseToDelete == null) { Console.WriteLine("Course not found."); break; }
                             CourseManager.Courses.Remove(courseToDelete);
                             CourseManager.Save();
@@ -259,8 +263,16 @@ namespace Application
                                     s => s.GetFullName() == deletePersonName);
                                 if (personToDelete == null) { Console.WriteLine("Person not found."); break; }
                                 CourseManager.Students.Remove(personToDelete);
+
+                                foreach (var course in CourseManager.Courses.Where(c =>
+                                             c.Students.Contains(personToDelete)))
+                                {
+                                    course.RemoveStudent(personToDelete);
+                                }
+                                
                                 CourseManager.Save();
                                 Console.WriteLine("Student deleted.");
+                                break;
                             }
                             else
                             {
@@ -268,10 +280,17 @@ namespace Application
                                     t => t.GetFullName() == deletePersonName);
                                 if (personToDelete == null) { Console.WriteLine("Person not found."); break; }
                                 CourseManager.Teachers.Remove(personToDelete);
+                                
+                                foreach (var course in CourseManager.Courses.Where(c =>
+                                             c.AssignedTeachers.Contains(personToDelete)))
+                                {
+                                    course.DeleteTeacher(personToDelete);
+                                }
+
+                                CourseManager.Save();
+                                Console.WriteLine("Teacher deleted.");
+                                break;
                             }
-                            CourseManager.Save();
-                            Console.WriteLine("Teacher deleted.");
-                            break;
                         }
                         Console.WriteLine("Incorrect type, please try again.");
                         break;
@@ -286,10 +305,10 @@ namespace Application
                         Console.WriteLine("  h/help \t \t help");
                         Console.WriteLine("  list \t \t \t return list of all courses or specific courses");
                         Console.WriteLine("  list_students \t return list of all sudents");
-                        Console.WriteLine("  list_teacher \t \t return list of all teachers");
+                        Console.WriteLine("  list_teachers \t \t return list of all teachers");
                         Console.WriteLine("  add \t \t \t add new student or teacher");
                         Console.WriteLine("  enroll \t \t enroll student on a course");
-                        Console.WriteLine("  change_teacher \t change assigned teacher of a course");
+                        Console.WriteLine("  assign_teacher \t assign teacher on a course");
                         Console.WriteLine("  create_course \t create new course");
                         Console.WriteLine("  delete \t \t delete person or course");
                         Console.WriteLine("  exit \t \t \t exit program");

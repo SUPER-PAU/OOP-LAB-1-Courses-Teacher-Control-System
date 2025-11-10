@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LAB_1_OOP.lib.Person;
 using Newtonsoft.Json;
 
@@ -8,9 +9,9 @@ namespace LAB_1_OOP.lib.Course
 {
     public static class CourseManager
     {
-        public static List<Course> Courses { get; set; }
-        public static List<Teacher> Teachers { get; set; }
-        public static List<Student> Students { get; set; }
+        public static List<Course> Courses { get; private set; }
+        public static List<Teacher> Teachers { get; private set; }
+        public static List<Student> Students { get; private set; }
         
         private const string SavePath = "SaveData.json";
 
@@ -91,16 +92,10 @@ namespace LAB_1_OOP.lib.Course
             };
             
             var wrapper = JsonConvert.DeserializeObject<SaveWrapper>(json, settings);
-
-            Courses = wrapper.CoursesSave;
+            
             Teachers = wrapper.TeachersSave;
             Students = wrapper.StudentsSave;
-            foreach (var course in Courses)
-            {
-                Console.WriteLine($"– {course.Title}, Type: {course.GetCourseType()}," +
-                                  $" Assigned Teacher:" +
-                                  $" {course.AssignedTeacher.FirstName} {course.AssignedTeacher.LastName}");
-            }
+            Courses = wrapper.CoursesSave;
         }
     }
     

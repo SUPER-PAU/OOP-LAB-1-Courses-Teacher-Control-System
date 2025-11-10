@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using LAB_1_OOP.lib.Person;
 
@@ -6,7 +7,7 @@ namespace LAB_1_OOP.lib.Course
     public abstract class Course
     {
         public string Title { get; protected set; }
-        public Teacher AssignedTeacher { get; protected set; }
+        public List<Teacher> AssignedTeachers { get; private set; } = new List<Teacher>();
         public List<Student> Students { get; protected set; } = new List<Student>();
 
         public abstract string GetCourseType();
@@ -14,7 +15,12 @@ namespace LAB_1_OOP.lib.Course
         
         public void AssignTeacher(Teacher teacher)
         {
-            AssignedTeacher = teacher;
+            AssignedTeachers.Add(teacher);
+        }
+
+        public void DeleteTeacher(Teacher teacher)
+        {
+            AssignedTeachers.Remove(teacher);
         }
 
         public void AddStudent(Student student)
