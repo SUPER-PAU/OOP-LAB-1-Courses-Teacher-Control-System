@@ -1,3 +1,5 @@
+using System;
+
 namespace LAB_1_OOP.lib.Person
 {
     public class Student : Person
@@ -6,6 +8,7 @@ namespace LAB_1_OOP.lib.Person
         {
             FirstName = firstName;
             LastName = lastName;
+            Id = Guid.NewGuid();
         }
     }
 }

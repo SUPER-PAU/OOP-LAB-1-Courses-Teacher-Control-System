@@ -29,12 +29,16 @@ namespace Application
                             {
                                 Console.WriteLine($"– {course.Title}, Type: {course.GetCourseType()}" +
                                                   $" specifics: {course.ShowDetails()}.");
-                                string teachers = "\t Assigned Teachers: ";
-                                foreach (var person in course.AssignedTeachers)
-                                    teachers += (person.GetFullName() + ", ");
+                                string teachers = "\t Assigned Teacher: ";
+                                teachers += CourseManager.Teachers.FirstOrDefault(
+                                    t => t.Id == course.AssignedTeacher)?.GetFullName();
                                 string students = "\t Assigned Students: ";
-                                foreach (var person in course.Students)
-                                    students += (person.GetFullName() + ", ");
+                                foreach (var stId in course.Students)
+                                {
+                                    students += CourseManager.Students.FirstOrDefault(
+                                                    s => s.Id == stId)?.GetFullName() + ", ";
+                                }
+                                    
                                 Console.WriteLine(teachers + "\n" + students);
                             }
                             break;
@@ -56,7 +60,7 @@ namespace Application
                                 break;
                             }
                             foreach (var course in CourseManager.Courses.Where(
-                                         c=> c.AssignedTeachers.Contains(selectedTeacher)))
+                                         c=> c.AssignedTeacher == selectedTeacher.Id))
                             {
                                 Console.WriteLine($"– {course.Title}, Type: {course.GetCourseType()}" +
                                                   $" specifics: {course.ShowDetails()}.");
@@ -72,7 +76,7 @@ namespace Application
                                 break;
                             }
                             foreach (var course in CourseManager.Courses.Where(c 
-                                         => c.Students.Contains(selectedStudent)))
+                                         => c.Students.Contains(selectedStudent.Id)))
                             {
                                 Console.WriteLine($"– {course.Title}, Type: {course.GetCourseType()}" +
                                           $" specifics: {course.ShowDetails()}.");
@@ -87,14 +91,14 @@ namespace Application
                     case "list_students":
                         foreach (var student in CourseManager.Students)
                         {
-                            Console.WriteLine("– " + student.GetFullName());
+                            Console.WriteLine($"– {student.GetFullName()}, uid: {student.Id}");
                         };
                         break;
                     
                     case "list_teachers":
                         foreach (var teacher in CourseManager.Teachers)
                         {
-                            Console.WriteLine("– " + teacher.GetFullName());
+                            Console.WriteLine($"– {teacher.GetFullName()}, uid: {teacher.Id}");
                         };
                         break;
                     
@@ -265,7 +269,7 @@ namespace Application
                                 CourseManager.Students.Remove(personToDelete);
 
                                 foreach (var course in CourseManager.Courses.Where(c =>
-                                             c.Students.Contains(personToDelete)))
+                                             c.Students.Contains(personToDelete.Id)))
                                 {
                                     course.RemoveStudent(personToDelete);
                                 }
@@ -282,7 +286,7 @@ namespace Application
                                 CourseManager.Teachers.Remove(personToDelete);
                                 
                                 foreach (var course in CourseManager.Courses.Where(c =>
-                                             c.AssignedTeachers.Contains(personToDelete)))
+                                             c.AssignedTeacher == personToDelete.Id))
                                 {
                                     course.DeleteTeacher(personToDelete);
                                 }

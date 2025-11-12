@@ -8,6 +8,7 @@ namespace LAB_1_OOP.lib.Person
         {
             FirstName = firstName;
             LastName = lastName;
+            Id = Guid.NewGuid();
         }
     }
 }
