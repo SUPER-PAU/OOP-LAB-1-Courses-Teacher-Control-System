@@ -17,7 +17,7 @@ namespace LAB_1_OOP.lib.Course
 
         public override string GetCourseType()
         {
-            return "Online";
+            return "Offline";
         }
 
         public override string ShowDetails()
